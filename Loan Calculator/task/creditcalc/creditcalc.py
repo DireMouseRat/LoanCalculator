@@ -9,39 +9,40 @@ class LoanCalculator:
         self.periods = 0
         self.interest = 0
 
-    def get_inputs(self, principal, period, payment, interest):
-        self.payment = int(input("Enter the monthly payment:\n")) if payment else 0
+    def get_inputs(self, principal, payment, periods, interest):
         self.principal = int(input("Enter the loan principal:\n")) if principal else 0
-        self.interest = float(input("Enter the loan interest:\n")) if interest else 0
-        self.periods = int(input("Enter the number of periods:\n")) if period else 0
-
-    def get_payment(self):
-        a = self.payment
-        p = self.principal
-        i = self.interest
-        n = self.periods
-        return p * (i * (1 + i) ^ n) / ((1 + i) ^ n - 1)
+        self.payment = float(input("Enter the monthly payment:\n")) if payment else 0
+        self.periods = int(input("Enter the number of periods:\n")) if periods else 0
+        i = float(input("Enter the loan interest:\n")) / 100 if interest else 0
+        self.interest = i / 12
 
     def get_principal(self):
-        a = self.payment
         p = self.principal
-        i = self.interest
+        a = self.payment
         n = self.periods
-        return a / ((i * (1 + i) ^ n)/((1 + i) ^ n - 1))
+        i = self.interest
+        return int(a / ((i * ((1 + i) ** n)) / (((1 + i) ** n) - 1)))
 
-    # def get_interest(self):
-    #     a = self.payment
-    #     p = self.principal
-    #     i = self.interest
-    #     n = self.periods
-    #     return
+    def get_payment(self):
+        p = self.principal
+        a = self.payment
+        n = self.periods
+        i = self.interest
+        return math.ceil(p * (i * ((1 + i) ** n)) / (((1 + i) ** n) - 1))
 
     def get_periods(self):
-        a = self.payment
         p = self.principal
-        i = self.interest
+        a = self.payment
         n = self.periods
-        return math.log(1 + i, (a / (a - i * p)))
+        i = self.interest
+        return math.ceil(math.log(a / (a - i * p), 1 + i))
+
+    # def get_interest(self):
+    #     p = self.principal
+    #     a = self.payment
+    #     n = self.periods
+    #     i = self.interest
+    #     return 0.10 / 12
 
 
 LC = LoanCalculator()
@@ -50,21 +51,36 @@ type "n" for number of monthly payments,
 type "a" for annuity monthly payment amount,
 type "p" for loan principal:\n""")
 
-if menu == 'n':
-    LC.get_inputs(True, True, False, True)
-    temp = LC.get_periods()
-    print(f"It will take {temp} months to repay the loan")
+if menu == 'p':
+    LC.get_inputs(False, True, True, True)
+    principal = LC.get_principal()
+    print(f"Your loan principal = {principal}!")
 
 elif menu == 'a':
-    LC.get_inputs(True, True, False, True)
-    temp = LC.get_payment()
-    years = ''
-    months = ''
-    print(f"It will take {years} and {months} to repay this loan!")
+    LC.get_inputs(True, False, True, True)
+    payment = LC.get_payment()
+    print(f"Your monthly payment = {payment}!")
 
-elif menu == 'p':
+if menu == 'n':
     LC.get_inputs(True, True, False, True)
-    temp = LC.get_principal()
+    periods = LC.get_periods()
+    years_num = str(math.floor(periods / 12))
+    months_num = str(periods % 12)
+    years_str = 'year' if int(years_num) == 1 else 'years'
+    months_str = 'month' if int(months_num) == 1 else 'months'
+    result = str()
+    if periods < 12:
+        result = ' '.join([months_num, months_str])
+    elif periods == 12:
+        result = "1 year"
+    elif periods > 12:
+        result = ' '.join([years_num, years_str, 'and', months_num, months_str])
+
+    print(f"It will take {result} to repay this loan!")
+
+
+
+
 
     # payment = math.ceil(principal / months)
     # if principal % months == 0:
