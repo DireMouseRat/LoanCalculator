@@ -1,6 +1,13 @@
 import math
 
 
+def date_type_to_str(date_type, date_count):
+    if date_count == 0:
+        return str()
+    plural = str() if date_count == 1 else 's'
+    return f'{date_count} {date_type}{plural}'
+
+
 class LoanCalculator:
 
     def __init__(self):
@@ -13,8 +20,7 @@ class LoanCalculator:
         self.principal = int(input("Enter the loan principal:\n")) if principal else 0
         self.payment = float(input("Enter the monthly payment:\n")) if payment else 0
         self.periods = int(input("Enter the number of periods:\n")) if periods else 0
-        i = float(input("Enter the loan interest:\n")) / 100 if interest else 0
-        self.interest = i / 12
+        self.interest = float(input("Enter the loan interest:\n")) / 1200 if interest else 0
 
     def get_principal(self):
         p = self.principal
@@ -55,32 +61,17 @@ if menu == 'p':
     LC.get_inputs(False, True, True, True)
     principal = LC.get_principal()
     print(f"Your loan principal = {principal}!")
-
 elif menu == 'a':
     LC.get_inputs(True, False, True, True)
     payment = LC.get_payment()
     print(f"Your monthly payment = {payment}!")
-
 if menu == 'n':
     LC.get_inputs(True, True, False, True)
     periods = LC.get_periods()
-    years_num = str(math.floor(periods / 12))
-    months_num = str(periods % 12)
-    years_str = 'year' if int(years_num) == 1 else 'years'
-    months_str = 'month' if int(months_num) == 1 else 'months'
-    result = str()
-    if periods < 12:
-        result = ' '.join([months_num, months_str])
-    elif periods == 12:
-        result = "1 year"
-    elif periods > 12:
-        result = ' '.join([years_num, years_str, 'and', months_num, months_str])
-
-    print(f"It will take {result} to repay this loan!")
-
-
-
-
+    years = date_type_to_str('year', math.floor(periods / 12))
+    months = date_type_to_str('month', periods % 12)
+    and_str = ' and ' if years and months else ''
+    print(f"It will take {years + and_str + months} to repay this loan!")
 
     # payment = math.ceil(principal / months)
     # if principal % months == 0:
