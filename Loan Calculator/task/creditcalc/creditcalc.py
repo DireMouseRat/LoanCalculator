@@ -13,34 +13,34 @@ class LoanCalculator:
     def __init__(self):
         self.principal = 0
         self.payment = 0
-        self.periods = 0
-        self.interest = 0
+        self.payments_number = 0
+        self.nominal_interest_rate = 0
 
     def get_inputs(self, principal, payment, periods, interest):
         self.principal = int(input("Enter the loan principal:\n")) if principal else 0
         self.payment = float(input("Enter the monthly payment:\n")) if payment else 0
-        self.periods = int(input("Enter the number of periods:\n")) if periods else 0
-        self.interest = float(input("Enter the loan interest:\n")) / 1200 if interest else 0
+        self.payments_number = int(input("Enter the number of periods:\n")) if periods else 0
+        self.nominal_interest_rate = float(input("Enter the loan interest:\n")) / 1200 if interest else 0
 
     def get_principal(self):
         p = self.principal
         a = self.payment
-        n = self.periods
-        i = self.interest
+        n = self.payments_number
+        i = self.nominal_interest_rate
         return int(a / ((i * ((1 + i) ** n)) / (((1 + i) ** n) - 1)))
 
     def get_payment(self):
         p = self.principal
         a = self.payment
-        n = self.periods
-        i = self.interest
+        n = self.payments_number
+        i = self.nominal_interest_rate
         return math.ceil(p * (i * ((1 + i) ** n)) / (((1 + i) ** n) - 1))
 
     def get_periods(self):
         p = self.principal
         a = self.payment
-        n = self.periods
-        i = self.interest
+        n = self.payments_number
+        i = self.nominal_interest_rate
         return math.ceil(math.log(a / (a - i * p), 1 + i))
 
     # def get_interest(self):
