@@ -1,17 +1,6 @@
 type: edu
 custom_name: stage4
 files:
-- name: creditcalc/creditcalc.py
-  visible: true
-  text: |
-    loan_principal = 'Loan principal: 1000'
-    final_output = 'The loan has been repaid!'
-    first_month = 'Month 1: repaid 250'
-    second_month = 'Month 2: repaid 250'
-    third_month = 'Month 3: repaid 500'
-
-    # write your code here
-  learner_created: false
 - name: tests.py
   visible: false
   text: |
@@ -255,6 +244,17 @@ files:
 
     if __name__ == '__main__':
         LoanCalcTest('creditcalc.creditcalc').run_tests()
+  learner_created: false
+- name: creditcalc/creditcalc.py
+  visible: true
+  text: |
+    loan_principal = 'Loan principal: 1000'
+    final_output = 'The loan has been repaid!'
+    first_month = 'Month 1: repaid 250'
+    second_month = 'Month 2: repaid 250'
+    third_month = 'Month 3: repaid 500'
+
+    # write your code here
   learner_created: false
 feedback_link: https://hyperskill.org/projects/90/stages/503/implement#comment
 status: Unchecked
