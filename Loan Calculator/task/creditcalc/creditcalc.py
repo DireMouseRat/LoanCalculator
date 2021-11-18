@@ -1,5 +1,6 @@
 import math
 import argparse
+import sys
 
 
 def pluralize(word, quantity):
@@ -17,6 +18,7 @@ class LoanCalculator:
         self.annuity_payment = float(payment) if payment is not None else 0
         self.number_of_payments = int(periods)
         self.nominal_interest_rate = float(interest) / 1200
+        self.overpayment = 0
 
     def get_principal(self):
         p = self.loan_principal
@@ -37,7 +39,14 @@ class LoanCalculator:
         a = self.annuity_payment
         n = self.number_of_payments
         i = self.nominal_interest_rate
-        return [math.ceil((p / n) + i * (p - ((p * (m - 1)) / n))) for m in range(1, n + 1)]
+
+        diffs = [math.ceil((p / n) + i * (p - ((p * (m - 1)) / n))) for m in range(1, n + 1)]
+        self.overpayment = sum(diffs) - p
+        s, m = '', 0
+        for d in diffs:
+            m += 1
+            s += f"Month {m}: payment is {str(d)}\n"
+        return s
 
     def get_periods(self):
         p = self.loan_principal
@@ -46,23 +55,55 @@ class LoanCalculator:
         i = self.nominal_interest_rate
         return math.ceil(math.log(a / (a - i * p), 1 + i))
 
+    def get_overpayment(self):
+        return f"Overpayment = {self.overpayment}"
+
 
 error_message = "Incorrect parameters"
 parser = argparse.ArgumentParser()
-parser.add_argument("--type", choices=["annuity", "diff"], required=True)
+parser.add_argument("--type", choices=["annuity", "diff"])
 parser.add_argument("--payment")
 parser.add_argument("--principal")
 parser.add_argument("--periods")
 parser.add_argument("--interest")
-parser.error(error_message)
-
-
 args = parser.parse_args()
 
+if args.type != 'annuity' and args.type != 'diff':
+    print("Missing type of annuity or diff")
+elif args.type is None or args.interest is None:
+    print("args.type is None or args.interest is None")
+elif args.type == 'diff' and args.payment:
+    print("args.type == 'diff' and args.payment has a value")
+elif len(sys.argv) < 5:  # The script path is an additional argument counted
+    print("Less than 4 arguments")
+elif (args.principal and int(args.principal) < 0)\
+        or (args.payment and float(args.payment) < 0)\
+        or (args.periods and int(args.periods) < 0)\
+        or (args.interest and float(args.interest) < 0):
+    print("Negative value")
 
 LC = LoanCalculator(args.type, args.principal, args.payment, args.periods, args.interest)
 
-print(LC.get_differentiated_payments())
+if args.type == 'diff':
+    if args.payment is None:
+        print(LC.get_differentiated_payments())
+        print(LC.get_overpayment())
+    pass
+else:  # default to Annuity
+    pass
+
+# Calculate Differentiated Payments and Overpayment
+# --type=diff --principal=1000000 --periods=10 --interest=10
+# --type=diff --principal=500000 --periods=8 --interest=7.8
+
+# Calculate Annuity Payment and Overpayment
+# --type=annuity --principal=1000000 --periods=60 --interest=10
+
+# Calculate Annuity Principal and Overpayment
+# --type=annuity --payment=8722 --periods=120 --interest=5.6
+
+# Calculate Time and Overpayment
+# --type=annuity --principal=500000 --payment=23000 --interest=7.8
 
 # if menu == 'p':
 #     LC.get_inputs(False, True, True, True)
