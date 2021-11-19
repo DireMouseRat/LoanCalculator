@@ -5,8 +5,8 @@ import sys
 
 def pluralize(word, quantity):
     if quantity == 0:
-        return str()
-    plural = str() if quantity == 1 else 's'
+        return ''
+    plural = '' if quantity == 1 else 's'
     return f'{quantity} {word}{plural}'
 
 
@@ -14,52 +14,75 @@ class LoanCalculator:
 
     def __init__(self, loan_type, principal, payment, periods, interest):
         self.loan_type = loan_type
-        self.loan_principal = int(principal)
-        self.annuity_payment = float(payment) if payment is not None else 0
-        self.number_of_payments = int(periods)
+        self.loan_principal = int(principal) if principal else 0
+        self.payment_per_period = float(payment) if payment is not None else 0
+        self.number_of_payments = int(periods) if periods else 0
         self.nominal_interest_rate = float(interest) / 1200
         self.overpayment = 0
+        self.calculate()
 
-    def get_principal(self):
+    def set_default_overpayment(self):
         p = self.loan_principal
-        a = self.annuity_payment
+        a = self.payment_per_period
+        n = self.number_of_payments
+        self.overpayment = int(a * n - p)
+        
+    def calculate(self):
+        if self.loan_type == 'diff':
+            if self.payment_per_period == 0:
+                [print(month) for month in self.get_differentiated_payments()]
+                print()
+        elif self.loan_type == 'annuity':
+            if self.payment_per_period == 0:
+                print(self.get_annuity_payment())
+            elif self.loan_principal == 0:
+                print(self.get_annuity_principal())
+            elif self.number_of_payments == 0:
+                print(self.get_time_to_repay())
+        print(self.get_overpayment())
+
+    def get_annuity_principal(self):
+        a = self.payment_per_period
         n = self.number_of_payments
         i = self.nominal_interest_rate
-        return int(a / ((i * ((1 + i) ** n)) / (((1 + i) ** n) - 1)))
+        p = int(a / ((i * ((1 + i) ** n)) / (((1 + i) ** n) - 1)))
+        self.set_default_overpayment()
+        return f"Your loan principal = {p}!"
 
-    def get_payment(self):
+    def get_annuity_payment(self):
         p = self.loan_principal
-        a = self.annuity_payment
         n = self.number_of_payments
         i = self.nominal_interest_rate
-        return math.ceil(p * (i * ((1 + i) ** n)) / (((1 + i) ** n) - 1))
+        a = math.ceil(p * (i * ((1 + i) ** n)) / (((1 + i) ** n) - 1))
+        self.set_default_overpayment()
+        return f"Your annuity payment = {a}!"
 
     def get_differentiated_payments(self):
         p = self.loan_principal
-        a = self.annuity_payment
+        a = self.payment_per_period
         n = self.number_of_payments
         i = self.nominal_interest_rate
+        d = [math.ceil((p / n) + i * (p - ((p * (m - 1)) / n))) for m in range(1, n + 1)]
+        self.overpayment = int(sum(d) - p)
+        return [f"Month {m + 1}: payment is {d[m]}" for m in range(0, len(d))]
 
-        diffs = [math.ceil((p / n) + i * (p - ((p * (m - 1)) / n))) for m in range(1, n + 1)]
-        self.overpayment = sum(diffs) - p
-        s, m = '', 0
-        for d in diffs:
-            m += 1
-            s += f"Month {m}: payment is {str(d)}\n"
-        return s
-
-    def get_periods(self):
+    def get_time_to_repay(self):
         p = self.loan_principal
-        a = self.annuity_payment
-        n = self.number_of_payments
+        a = self.payment_per_period
         i = self.nominal_interest_rate
-        return math.ceil(math.log(a / (a - i * p), 1 + i))
+        self.number_of_payments = math.ceil(math.log(a / (a - i * p), 1 + i))
+        self.set_default_overpayment()
+        n = self.number_of_payments
+        y = pluralize('year', math.floor(n / 12))
+        m = pluralize('month', n % 12)
+        conjunction = ' and ' if y and m else ''
+        return f"It will take {y + conjunction + m} to repay this loan!"
 
     def get_overpayment(self):
         return f"Overpayment = {self.overpayment}"
 
 
-error_message = "Incorrect parameters"
+error_message = "Incorrect parameters."
 parser = argparse.ArgumentParser()
 parser.add_argument("--type", choices=["annuity", "diff"])
 parser.add_argument("--payment")
@@ -69,59 +92,17 @@ parser.add_argument("--interest")
 args = parser.parse_args()
 
 if args.type != 'annuity' and args.type != 'diff':
-    print("Missing type of annuity or diff")
+    print(error_message)
 elif args.type is None or args.interest is None:
-    print("args.type is None or args.interest is None")
+    print(error_message)
 elif args.type == 'diff' and args.payment:
-    print("args.type == 'diff' and args.payment has a value")
-elif len(sys.argv) < 5:  # The script path is an additional argument counted
-    print("Less than 4 arguments")
+    print(error_message)
+elif len(sys.argv) < 5:
+    print(error_message)
 elif (args.principal and int(args.principal) < 0)\
         or (args.payment and float(args.payment) < 0)\
         or (args.periods and int(args.periods) < 0)\
         or (args.interest and float(args.interest) < 0):
-    print("Negative value")
-
-LC = LoanCalculator(args.type, args.principal, args.payment, args.periods, args.interest)
-
-if args.type == 'diff':
-    if args.payment is None:
-        print(LC.get_differentiated_payments())
-        print(LC.get_overpayment())
-    pass
-else:  # default to Annuity
-    pass
-
-# Calculate Differentiated Payments and Overpayment
-# --type=diff --principal=1000000 --periods=10 --interest=10
-# --type=diff --principal=500000 --periods=8 --interest=7.8
-
-# Calculate Annuity Payment and Overpayment
-# --type=annuity --principal=1000000 --periods=60 --interest=10
-
-# Calculate Annuity Principal and Overpayment
-# --type=annuity --payment=8722 --periods=120 --interest=5.6
-
-# Calculate Time and Overpayment
-# --type=annuity --principal=500000 --payment=23000 --interest=7.8
-
-# if menu == 'p':
-#     LC.get_inputs(False, True, True, True)
-#     print(f"Your loan principal = {LC.get_principal()}!")
-# elif menu == 'a':
-#     LC.get_inputs(True, False, True, True)
-#     print(f"Your monthly payment = {LC.get_payment()}!")
-# if menu == 'n':
-#     LC.get_inputs(True, True, False, True)
-#     periods = LC.get_periods()
-#     years = pluralize('year', math.floor(periods / 12))
-#     months = pluralize('month', periods % 12)
-#     and_str = ' and ' if years and months else ''
-#     print(f"It will take {years + and_str + months} to repay this loan!")
-
-    # payment = math.ceil(principal / months)
-    # if principal % months == 0:
-    #     print(f"Your monthly payment = {payment}")
-    # else:
-    #     last_payment = principal - (months - 1) * payment
-    #     print(f"Your monthly payment = {payment} and the last payment = {last_payment}.")
+    print(error_message)
+else:
+    LoanCalculator(args.type, args.principal, args.payment, args.periods, args.interest)

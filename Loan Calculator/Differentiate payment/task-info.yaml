@@ -257,5 +257,20 @@ files:
     # write your code here
   learner_created: false
 feedback_link: https://hyperskill.org/projects/90/stages/503/implement#comment
-status: Unchecked
+status: Failed
+feedback:
+  message: |-
+    Wrong answer in test #1
+
+    Looks like your loan principal calculations aren't working properly. Correct loan principal and overpayment are [ 246622, 800018 ], but you output: ['800018', '1046640']
+
+    Please find below the output of your program during this failed test.
+
+    ---
+
+    Arguments: --type=annuity --payment=8722 --periods=120 --interest=5.6
+
+    Your loan principal = 800018!
+    Overpayment = 1046640
+  time: Fri, 19 Nov 2021 02:24:23 UTC
 record: -1
