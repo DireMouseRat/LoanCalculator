@@ -14,67 +14,62 @@ class LoanCalculator:
 
     def __init__(self, loan_type, principal, payment, periods, interest):
         self.loan_type = loan_type
-        self.loan_principal = int(principal) if principal else 0
-        self.payment_per_period = float(payment) if payment is not None else 0
-        self.number_of_payments = int(periods) if periods else 0
-        self.nominal_interest_rate = float(interest) / 1200
+        self.principal = int(principal) if principal else 0
+        self.payment = int(payment) if payment else 0
+        self.periods = int(periods) if periods else 0
+        self.interest = float(interest) / 1200
         self.overpayment = 0
         self.calculate()
 
     def set_default_overpayment(self):
-        p = self.loan_principal
-        a = self.payment_per_period
-        n = self.number_of_payments
-        self.overpayment = int(a * n - p)
+        self.overpayment = int(self.payment * self.periods - self.principal)
         
     def calculate(self):
         if self.loan_type == 'diff':
-            if self.payment_per_period == 0:
+            if self.payment == 0:
                 [print(month) for month in self.get_differentiated_payments()]
                 print()
         elif self.loan_type == 'annuity':
-            if self.payment_per_period == 0:
+            if self.payment == 0:
                 print(self.get_annuity_payment())
-            elif self.loan_principal == 0:
+            elif self.principal == 0:
                 print(self.get_annuity_principal())
-            elif self.number_of_payments == 0:
+            elif self.periods == 0:
                 print(self.get_time_to_repay())
         print(self.get_overpayment())
 
     def get_annuity_principal(self):
-        a = self.payment_per_period
-        n = self.number_of_payments
-        i = self.nominal_interest_rate
-        p = int(a / ((i * ((1 + i) ** n)) / (((1 + i) ** n) - 1)))
+        a = self.payment
+        n = self.periods
+        i = self.interest
+        self.principal = p = int(a / ((i * ((1 + i) ** n)) / (((1 + i) ** n) - 1)))
         self.set_default_overpayment()
-        return f"Your loan principal = {p}!"
+        return f"Your loan principal = {self.principal}!"
 
     def get_annuity_payment(self):
-        p = self.loan_principal
-        n = self.number_of_payments
-        i = self.nominal_interest_rate
-        a = math.ceil(p * (i * ((1 + i) ** n)) / (((1 + i) ** n) - 1))
+        p = self.principal
+        n = self.periods
+        i = self.interest
+        self.payment = math.ceil(p * (i * ((1 + i) ** n)) / (((1 + i) ** n) - 1))
         self.set_default_overpayment()
-        return f"Your annuity payment = {a}!"
+        return f"Your annuity payment = {self.payment}!"
 
     def get_differentiated_payments(self):
-        p = self.loan_principal
-        a = self.payment_per_period
-        n = self.number_of_payments
-        i = self.nominal_interest_rate
-        d = [math.ceil((p / n) + i * (p - ((p * (m - 1)) / n))) for m in range(1, n + 1)]
-        self.overpayment = int(sum(d) - p)
-        return [f"Month {m + 1}: payment is {d[m]}" for m in range(0, len(d))]
+        p = self.principal
+        n = self.periods
+        i = self.interest
+        self.payment = [math.ceil((p / n) + i * (p - ((p * (m - 1)) / n))) for m in range(1, n + 1)]
+        self.overpayment = int(sum(self.payment) - p)
+        return [f"Month {m + 1}: payment is {self.payment[m]}" for m in range(0, len(self.payment))]
 
     def get_time_to_repay(self):
-        p = self.loan_principal
-        a = self.payment_per_period
-        i = self.nominal_interest_rate
-        self.number_of_payments = math.ceil(math.log(a / (a - i * p), 1 + i))
+        p = self.principal
+        a = self.payment
+        i = self.interest
+        self.periods = math.ceil(math.log(a / (a - i * p), 1 + i))
         self.set_default_overpayment()
-        n = self.number_of_payments
-        y = pluralize('year', math.floor(n / 12))
-        m = pluralize('month', n % 12)
+        y = pluralize('year', math.floor(self.periods / 12))
+        m = pluralize('month', self.periods % 12)
         conjunction = ' and ' if y and m else ''
         return f"It will take {y + conjunction + m} to repay this loan!"
 
